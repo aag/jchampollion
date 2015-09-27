@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'jchampollion.JChampollion'
+
+sourceCompatibility = 1.4
+version = '1.0'
+
+jar {
+    baseName = 'jchampollion'
+
+    manifest {
+        attributes 'Implementation-Title': 'JChampollion',
+                   'Implementation-Version': version
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "lucene:lucene:1.4.3"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.7'
+}
