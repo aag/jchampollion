@@ -26,7 +26,7 @@ language. Development and testing was done with the
 
 Here are some example translations produced by JChampollion:
 
-<table border="1" cellpadding="5" cellspacing="0">
+<table>
     <thead>
         <tr>
             <th>Source Language Collocation</th>
