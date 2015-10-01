@@ -25,22 +25,31 @@ import java.util.*;
  *
  */
 public class Corpus {
-
     String sourceFilename;
     String targetFilename;
+
+    Searcher sourceSearcher;
+    Searcher targetSearcher;
 
     /**
      * Constructor for the Corpus.
      * Currently only supports a file.
      * TODO: Support a directory with multiple files
      *
-     * @param source_ The text file that contains the source language corpus.
-     * @param target_ The text file that contains the target language corpus.
+     * @param source The text file that contains the source language corpus.
+     * @param target The text file that contains the target language corpus.
+     * @param reIndex Whether or not to rebuild the index from the corpus files.
      */
-    public Corpus(String source_, String target_) {
-        sourceFilename = source_;
-        targetFilename = target_;
-    } // End constructor
+    public Corpus(String source, String target, boolean reIndex) throws IOException {
+        this.sourceFilename = source;
+        this.targetFilename = target;
+
+        if (reIndex) {
+            buildIndices();
+        }
+
+        initSearchers();
+    }
 
     /**
      * Takes a file or directory, and adds its contents to a Lucene index.
@@ -122,7 +131,7 @@ public class Corpus {
      * Rebuild the indices
      *
      */
-    public void buildIndices() {
+    private void buildIndices() {
         buildIndex("source");
         buildIndex("target");
     }
@@ -157,6 +166,17 @@ public class Corpus {
     }
 
     /**
+     * Initializes the Searcher member variables for both the source and
+     * target index.
+     *
+     * @throws IOException
+     */
+    private void initSearchers() throws IOException {
+        sourceSearcher = new IndexSearcher("sourceIndex");
+        targetSearcher = new IndexSearcher("targetIndex");
+    }
+
+    /**
      * getSentencesContaining returns a Vector of Integers containing the
      * numbers of the sentences that contain the given words in the source
      * language corpus.
@@ -171,11 +191,10 @@ public class Corpus {
         words_ = requireAll(words_);
 
         try {
-            Searcher searcher = new IndexSearcher("sourceIndex");
             Analyzer analyzer = new SimpleAnalyzer();
 
             Query query = QueryParser.parse(words_, "contents", analyzer);
-            Hits hits = searcher.search(query);
+            Hits hits = sourceSearcher.search(query);
 
             // Add the numbers of all the hits to the Vector
             for (int i = 0; i < hits.length(); i++) {
@@ -196,17 +215,16 @@ public class Corpus {
      * given words.
      *
      * @param words_    The words to be found
-     * @param source    The source {source, target} to be searched.
+     * @param searcher  The searcher to be searched.
      * @return The number of sentences containing the words
      */
-    public int numSentencesContaining(String words_, String source) {
+    public int numSentencesContaining(String words_, Searcher searcher) {
         int num = 0;
 
         words_ = requireAll(words_);
         //DEBUG System.out.println("Finding hits for " + words_);
 
         try {
-            Searcher searcher = new IndexSearcher(source + "Index");
             Analyzer analyzer = new SimpleAnalyzer();
 
             Query query = QueryParser.parse(words_, "contents", analyzer);
@@ -225,15 +243,13 @@ public class Corpus {
      * Return the contents of a sentence, referenced by its number.
      *
      * @param num        The number of the sentence to be returned.
-     * @param source    The index {source,target} to be searched.
+     * @param searcher   The searcher to be searched.
      * @return A String with the sentence in it.
      */
-    public String getSentence(String num, String source) {
+    public String getSentence(String num, Searcher searcher) {
         String s = "";
 
         try {
-            Searcher searcher = new IndexSearcher(source + "Index");
-
             Query query = new TermQuery(new Term("snum", num));
             Hits hits = searcher.search(query);
 
@@ -279,8 +295,8 @@ public class Corpus {
 
         double numXAndY = countIntersections(X, Y);
 
-        double numX = numSentencesContaining(X, "source");
-        double numY = numSentencesContaining(Y, "target");
+        double numX = numSentencesContaining(X, sourceSearcher);
+        double numY = numSentencesContaining(Y, targetSearcher);
 
         diceVal = (2 * numXAndY) / (numX + numY);
 
@@ -307,18 +323,16 @@ public class Corpus {
 
         try {
             // Get all sentences for the source terms
-            Searcher ssearcher = new IndexSearcher("sourceIndex");
             Analyzer sanalyzer = new SimpleAnalyzer();
 
             Query squery = QueryParser.parse(S, "contents", sanalyzer);
-            Hits sHits = ssearcher.search(squery, new Sort("snum"));
+            Hits sHits = sourceSearcher.search(squery, new Sort("snum"));
 
             // Get all sentences for the target terms
-            Searcher tsearcher = new IndexSearcher("targetIndex");
             Analyzer tanalyzer = new SimpleAnalyzer();
 
             Query tquery = QueryParser.parse(T, "contents", tanalyzer);
-            Hits tHits = tsearcher.search(tquery, new Sort("snum"));
+            Hits tHits = targetSearcher.search(tquery, new Sort("snum"));
 
             int sCount = 0;
             int tCount = 0;
@@ -372,7 +386,7 @@ public class Corpus {
         // Go through all the related sentences in the target corpus and add
         // their words to the Map
         for (int i = 0; i < sentences.size(); i++) {
-            String sentence = getSentence((String) sentences.get(i), "target");
+            String sentence = getSentence((String) sentences.get(i), targetSearcher);
 
             // Split words
             StringTokenizer tokenizer = new StringTokenizer(sentence, " ");
@@ -427,7 +441,7 @@ public class Corpus {
         Vector wordsVector = new Vector();
 
         // Return if the words_ are not in the source corpus
-        if (numSentencesContaining(words_, "source") == 0) {
+        if (numSentencesContaining(words_, sourceSearcher) == 0) {
             return wordsVector;
         }
 
@@ -435,7 +449,7 @@ public class Corpus {
 
         int i = 0;
         WordFrequency wf = (WordFrequency) relatedWords.get(i);
-        double wordsFreq = numSentencesContaining(words_, "source");
+        double wordsFreq = numSentencesContaining(words_, sourceSearcher);
         double diceUB = (2 * wf.getFreq()) / (wordsFreq + wf.getFreq());
 
 		/* Go down the list until
@@ -482,7 +496,7 @@ public class Corpus {
     public String getTranslation(String collocation, int Tf, double Td) {
         String translation = "";
 
-        System.out.println("Finding translation for \"" + collocation + "\".  Found " + numSentencesContaining(collocation, "source") + " times in source corpus.");
+        System.out.println("Finding translation for \"" + collocation + "\".  Found " + numSentencesContaining(collocation, sourceSearcher) + " times in source corpus.");
 
         // Step 1
         Vector origCandidates = getRelatedCandidateWords(collocation, Tf, Td);

@@ -6,6 +6,8 @@
  */
 package jchampollion;
 
+import java.io.IOException;
+
 /**
  * @author Adam Goforth
  *
@@ -51,14 +53,6 @@ public class JChampollion {
      */
     public void translate(String collocation) {
         System.out.println(corpus.getTranslation(collocation, Tf, Td));
-    }
-
-    /**
-     * Rebuilds the index.   Run once each time the corpus changes.
-     *
-     */
-    private void IndexCorpus() {
-        corpus.buildIndices();
     }
 
     /**
@@ -109,15 +103,17 @@ public class JChampollion {
         }
 
         // Make sure source, target and collocation were given
-        if (!sourcefilename.equals("") && !targetfilename.equals("") && !collocation.equals("")) {
-            corpus = new Corpus(sourcefilename, targetfilename);
+        if (!sourcefilename.isEmpty() && !targetfilename.isEmpty()) {
+            try {
+                corpus = new Corpus(sourcefilename, targetfilename, doIndex);
 
-            if (doIndex) {
-                IndexCorpus();
+                if (!collocation.isEmpty()) {
+                    translate(collocation);
+                }
+            } catch (IOException e) {
+                System.out.println("Could not create search indices");
+                e.printStackTrace();
             }
-
-            translate(collocation);
-
         } else {
             showHelp();
             System.exit(0);
