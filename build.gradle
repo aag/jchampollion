@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 mainClassName = 'jchampollion.JChampollion'
 
-sourceCompatibility = 1.4
+sourceCompatibility = 1.7
 version = '1.0'
 
 jar {

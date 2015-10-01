@@ -329,10 +329,10 @@ public class Corpus {
             // Compare the sentences, and count how many match
             while (sCount < sHits.length() && tCount < tHits.length()) {
                 Document sSentence = sHits.doc(sCount);
-                int sSentNum = Integer.valueOf(sSentence.get("snum")).intValue();
+                int sSentNum = Integer.valueOf(sSentence.get("snum"));
 
                 Document tSentence = tHits.doc(tCount);
-                int tSentNum = Integer.valueOf(tSentence.get("snum")).intValue();
+                int tSentNum = Integer.valueOf(tSentence.get("snum"));
 
                 //DEBUG System.out.println("s " + sSentNum + "\tt " + tSentNum);
                 if (sSentNum == tSentNum) {
@@ -371,7 +371,7 @@ public class Corpus {
         Vector sentences = getSentencesContaining(words, "source");
 
         Map wordsMap = new HashMap();
-        final Integer ONE = new Integer(1);
+        final Integer ONE = 1;
 
         // Go through all the related sentences in the target corpus and add
         // their words to the Map
@@ -391,8 +391,8 @@ public class Corpus {
                     if (frequency == null) {
                         frequency = ONE;
                     } else {
-                        int value = frequency.intValue();
-                        frequency = new Integer(value + 1);
+                        int value = frequency;
+                        frequency = value + 1;
                     }
                     wordsMap.put(key.toLowerCase(), frequency);
                 }
