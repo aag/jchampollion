@@ -25,9 +25,6 @@ import java.util.*;
  *
  */
 public class Corpus {
-    String sourceFilename;
-    String targetFilename;
-
     Searcher sourceSearcher;
     Searcher targetSearcher;
 
@@ -41,11 +38,8 @@ public class Corpus {
      * @param reIndex Whether or not to rebuild the index from the corpus files.
      */
     public Corpus(String source, String target, boolean reIndex) throws IOException {
-        this.sourceFilename = source;
-        this.targetFilename = target;
-
         if (reIndex) {
-            buildIndices();
+            buildIndices(source, target);
         }
 
         initSearchers();
@@ -131,9 +125,9 @@ public class Corpus {
      * Rebuild the indices
      *
      */
-    private void buildIndices() {
-        buildIndex("source");
-        buildIndex("target");
+    private void buildIndices(String sourceFilepath, String targetFilepath) {
+        buildIndex("source", sourceFilepath);
+        buildIndex("target", targetFilepath);
     }
 
     /**
@@ -141,15 +135,11 @@ public class Corpus {
      *
      * @param    source    The source {source,target} that should be added.
      */
-    public void buildIndex(String source) {
+    public void buildIndex(String source, String filePath) {
         Date start = new Date();
         try {
             IndexWriter writer = new IndexWriter(source + "Index", new SimpleAnalyzer(), true);
-            if (source.equals("source")) {
-                indexDocs(writer, new File(sourceFilename));
-            } else if (source.equals("target")) {
-                indexDocs(writer, new File(targetFilename));
-            }
+            indexDocs(writer, new File(filePath));
 
             writer.optimize();
             writer.close();
