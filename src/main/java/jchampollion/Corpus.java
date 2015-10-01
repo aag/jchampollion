@@ -465,7 +465,7 @@ public class Corpus {
             // articles). Smadja et al. remark in Section 7.1 that they mess up
             // the dice correlations if left in, so they are stripped.
 
-            if (!wf.getWord().matches("(der|die|das|den|dem|des|ein|eine|einer|einen|einem|eines|bis|durch|entlang|f�r|gegen|ohne|um|an|am|auf|hinter|in|im|neben|�ber|unter|vor|zwischen|aus|ausser|au�er|bei|gegen�ber|mit|nach|seit|von|zu|zur|anstatt|statt|au�erhalb|innerhalb|trotz|w�hrend|wegen)")) {
+            if (!wf.getWord().matches("(der|die|das|den|dem|des|ein|eine|einer|einen|einem|eines|bis|durch|entlang|für|gegen|ohne|um|an|am|auf|hinter|in|im|neben|über|unter|vor|zwischen|aus|ausser|außer|bei|gegenüber|mit|nach|seit|von|zu|zur|anstatt|statt|außerhalb|innerhalb|trotz|während|wegen)")) {
                 diceUB = (2 * wf.getFreq()) / (wordsFreq + wf.getFreq());
 
                 if (dice(words_, wf.getWord()) > Td) {
