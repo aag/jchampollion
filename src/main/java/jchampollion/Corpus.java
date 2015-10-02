@@ -64,8 +64,8 @@ public class Corpus {
                 String[] files = file.list();
                 // an IO error could occur
                 if (files != null) {
-                    for (int i = 0; i < files.length; i++) {
-                        indexDocs(writer, new File(file, files[i]));
+                    for (String file1 : files) {
+                        indexDocs(writer, new File(file, file1));
                     }
                 }
             } else {
@@ -175,8 +175,8 @@ public class Corpus {
      * @param    source    The source {source, target} to be searched
      * @return A Vector of the sentence numbers
      */
-    public Vector getSentencesContaining(String words_, String source) {
-        Vector sentenceNums = new Vector();
+    public Vector<String> getSentencesContaining(String words_, String source) {
+        Vector<String> sentenceNums = new Vector<>();
 
         words_ = requireAll(words_);
 
@@ -366,17 +366,17 @@ public class Corpus {
      *         frequency.
      */
     public Vector getRelatedWordsByFrequency(String words) {
-        Vector wordsVector = new Vector();
+        Vector<WordFrequency> wordsVector = new Vector<>();
 
-        Vector sentences = getSentencesContaining(words, "source");
+        Vector<String> sentences = getSentencesContaining(words, "source");
 
-        Map wordsMap = new HashMap();
+        Map<String, Integer> wordsMap = new HashMap<>();
         final Integer ONE = 1;
 
         // Go through all the related sentences in the target corpus and add
         // their words to the Map
-        for (int i = 0; i < sentences.size(); i++) {
-            String sentence = getSentence((String) sentences.get(i), targetSearcher);
+        for (String sentence1 : sentences) {
+            String sentence = getSentence(sentence1, targetSearcher);
 
             // Split words
             StringTokenizer tokenizer = new StringTokenizer(sentence, " ");
@@ -387,7 +387,7 @@ public class Corpus {
                 String key = tokenizer.nextToken();
 
                 if (!key.matches("(\\.|\\!|\\?|\\,|\\;|\\:|\\-|\\(|\\)|\\\"|\\%|\\#)")) {
-                    Integer frequency = (Integer) wordsMap.get(key.toLowerCase());
+                    Integer frequency = wordsMap.get(key.toLowerCase());
                     if (frequency == null) {
                         frequency = ONE;
                     } else {
@@ -401,20 +401,18 @@ public class Corpus {
 
         // Sort the Map, then add the parts to the wordsVector in descending
         // order by frequency
-        ArrayList entries = new ArrayList(wordsMap.entrySet());
-        Collections.sort(entries, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                Map.Entry e1 = (Map.Entry) o1;
-                Map.Entry e2 = (Map.Entry) o2;
-                Comparable v1 = (Comparable) e1.getValue();
-                Comparable v2 = (Comparable) e2.getValue();
+        ArrayList<Map.Entry<String, Integer>> entries = new ArrayList<>(wordsMap.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                Integer v1 = o1.getValue();
+                Integer v2 = o2.getValue();
                 return v2.compareTo(v1);
             }
         });
-        for (Iterator i = entries.iterator(); i.hasNext(); ) {
-            Map.Entry e = (Map.Entry) i.next();
+
+        for (Map.Entry<String, Integer> entry : entries) {
             //System.out.println("Word: " + e.getKey() + "\t\tFreq: " + e.getValue());
-            wordsVector.add(new WordFrequency((String) e.getKey(), ((Integer) e.getValue()).intValue()));
+            wordsVector.add(new WordFrequency(entry.getKey(), entry.getValue()));
         }
 
         return wordsVector;
@@ -427,8 +425,8 @@ public class Corpus {
      * @param Td        The variable Td, the minimum dice threshold for a group of word to be considered a candidate.
      * @return A Vector of Strings, one word each.
      */
-    public Vector getRelatedCandidateWords(String words_, int Tf, double Td) {
-        Vector wordsVector = new Vector();
+    public Vector<String> getRelatedCandidateWords(String words_, int Tf, double Td) {
+        Vector<String> wordsVector = new Vector<>();
 
         // Return if the words_ are not in the source corpus
         if (numSentencesContaining(words_, sourceSearcher) == 0) {
@@ -484,17 +482,18 @@ public class Corpus {
      * @return A String containing the found translation.
      */
     public String getTranslation(String collocation, int Tf, double Td) {
-        String translation = "";
-
         System.out.println("Finding translation for \"" + collocation + "\".  Found " + numSentencesContaining(collocation, sourceSearcher) + " times in source corpus.");
 
         // Step 1
-        Vector origCandidates = getRelatedCandidateWords(collocation, Tf, Td);
+        Vector<String> origCandidates = getRelatedCandidateWords(collocation, Tf, Td);
 
         // "Table" for local best translations
-        Vector finalSet = new Vector();
+        Vector<String> finalSet = new Vector<>();
 
-        Vector tempCandidates = (Vector) origCandidates.clone();
+        Vector<String> tempCandidates = new Vector<>();
+        for (String candidate: origCandidates) {
+            tempCandidates.add(candidate);
+        }
 
         // Steps 2 Through 4 repeated while there are candidates left
         while (true) {
@@ -512,9 +511,7 @@ public class Corpus {
         }
 
         // Step 5
-        translation = getLocalBest(collocation, finalSet);
-
-        return translation;
+        return getLocalBest(collocation, finalSet);
     }
 
     /**
@@ -533,15 +530,15 @@ public class Corpus {
      * @return The candidates Vector with those below the dice threshold
      *         removed.
      */
-    private Vector removeLowDice(String words, Vector candidates, double Td) {
-        Vector newCandidates = new Vector();
+    private Vector<String> removeLowDice(String words, Vector<String> candidates, double Td) {
+        Vector<String> newCandidates = new Vector<>();
 
         // Go through the given candidates, and add the ones with a high enough
         // dice score to the new Vector
-        for (int i = 0; i < candidates.size(); i++) {
-            if (dice(words, (String) candidates.get(i)) > Td) {
+        for (String candidate : candidates) {
+            if (dice(words, candidate) > Td) {
                 //DEBUG System.out.println("Keeping word: " + candidates.get(i) + "\t dice: " + dice(words, (String)candidates.get(i)) );
-                newCandidates.add(candidates.get(i));
+                newCandidates.add(candidate);
             }
         }
 
@@ -559,16 +556,16 @@ public class Corpus {
      *            translation.
      * @return A String with the best candidate
      */
-    private String getLocalBest(String collocation, Vector candidates) {
+    private String getLocalBest(String collocation, Vector<String> candidates) {
         String best = "";
 
         double bestScore = 0;
 
         // Find the maximum
-        for (int i = 0; i < candidates.size(); i++) {
-            double currentDice = dice(collocation, (String) candidates.get(i));
+        for (String candidate : candidates) {
+            double currentDice = dice(collocation, candidate);
             if (currentDice > bestScore) {
-                best = (String) candidates.get(i);
+                best = candidate;
                 bestScore = currentDice;
             }
         }
@@ -581,20 +578,20 @@ public class Corpus {
      *
      * @param multiwordCandidates    A Vector of one or more words in Strings separated by spaces.
      * @param origCandidates        A Vector of single words in Strings.
-     * @return
      */
-    private Vector cartesianProduct(Vector multiwordCandidates, Vector origCandidates) {
-        Vector retVector = new Vector();
+    private Vector<String> cartesianProduct(Vector<String> multiwordCandidates, Vector<String> origCandidates) {
+        Vector<String> retVector = new Vector<>();
 
         // A has the possible multiple-word strings in it. Combine these with the words
         // from the original candidates list.
-        for (int i = 0; i < multiwordCandidates.size(); i++) {
-            for (int j = 0; j < origCandidates.size(); j++) {
-                String mwString = (String) multiwordCandidates.get(i);
-                String origString = (String) origCandidates.get(j);
+        for (String multiwordCandidate : multiwordCandidates) {
+            for (String origCandidate : origCandidates) {
                 // Make sure the original candidate isn't already in the string
-                if (!mwString.startsWith(origString) && !mwString.endsWith(origString) && mwString.indexOf(" " + origString + " ") == -1) {
-                    retVector.add(mwString + " " + origString);
+                if (!multiwordCandidate.startsWith(origCandidate) &&
+                    !multiwordCandidate.endsWith(origCandidate) &&
+                    !multiwordCandidate.contains(" " + origCandidate + " "))
+                {
+                    retVector.add(multiwordCandidate + " " + origCandidate);
                 }
             }
         }
