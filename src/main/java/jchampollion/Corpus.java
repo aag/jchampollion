@@ -74,30 +74,24 @@ public class Corpus {
                     FileInputStream is = new FileInputStream(file);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-                    if (reader != null) {
+                    String record;
+                    int recCount = 0;
 
-                        String record = null;
-                        int recCount = 0;
-
-                        try {
-                            while ((record = reader.readLine()) != null) {
-                                recCount++;
-                                writer.addDocument(createDocumentFromSentence(recCount, record));
-                            }
-                        } catch (IOException e) {
-                            // Catch IO errors from FileInputStream
-                            System.out.println("Error reading file: " + e.getMessage());
+                    try {
+                        while ((record = reader.readLine()) != null) {
+                            recCount++;
+                            writer.addDocument(createDocumentFromSentence(recCount, record));
                         }
-                        System.out.println("Source Lines Indexed: " + recCount);
+                    } catch (IOException e) {
+                        // Catch IO errors from FileInputStream
+                        System.out.println("Error reading file: " + e.getMessage());
                     }
-
-
+                    System.out.println("Source Lines Indexed: " + recCount);
                 }
-                // at least on windows, some temporary files raise this
-                // exception with an "access denied" message
-                // checking if the file can be read doesn't help
-                catch (FileNotFoundException fnfe) {
-                    ;
+                // At least on windows, some temporary files raise this
+                // exception with an "access denied" message.
+                // Checking if the file can be read doesn't help.
+                catch (FileNotFoundException ignored) {
                 }
             }
         }
@@ -172,10 +166,9 @@ public class Corpus {
      * language corpus.
      *
      * @param    words_    The words to be found
-     * @param    source    The source {source, target} to be searched
      * @return A Vector of the sentence numbers
      */
-    public Vector<String> getSentencesContaining(String words_, String source) {
+    public Vector<String> getSentencesContaining(String words_) {
         Vector<String> sentenceNums = new Vector<>();
 
         words_ = requireAll(words_);
@@ -281,16 +274,12 @@ public class Corpus {
             return 0;
         }
 
-        double diceVal = 0;
-
         double numXAndY = countIntersections(X, Y);
 
         double numX = numSentencesContaining(X, sourceSearcher);
         double numY = numSentencesContaining(Y, targetSearcher);
 
-        diceVal = (2 * numXAndY) / (numX + numY);
-
-        return diceVal;
+        return (2 * numXAndY) / (numX + numY);
     }
 
     /**
@@ -368,7 +357,7 @@ public class Corpus {
     public Vector getRelatedWordsByFrequency(String words) {
         Vector<WordFrequency> wordsVector = new Vector<>();
 
-        Vector<String> sentences = getSentencesContaining(words, "source");
+        Vector<String> sentences = getSentencesContaining(words);
 
         Map<String, Integer> wordsMap = new HashMap<>();
         final Integer ONE = 1;
@@ -386,7 +375,7 @@ public class Corpus {
                 // Get word
                 String key = tokenizer.nextToken();
 
-                if (!key.matches("(\\.|\\!|\\?|\\,|\\;|\\:|\\-|\\(|\\)|\\\"|\\%|\\#)")) {
+                if (!key.matches("(\\.|!|\\?|,|;|:|\\-|\\(|\\)|\"|%|#)")) {
                     Integer frequency = wordsMap.get(key.toLowerCase());
                     if (frequency == null) {
                         frequency = ONE;
