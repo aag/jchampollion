@@ -80,20 +80,30 @@ public class JChampollion {
      */
     public void parseProgArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-source")) {
-                sourcefilename = args[i + 1];
-            } else if (args[i].equals("-target")) {
-                targetfilename = args[i + 1];
-            } else if (args[i].equals("-index")) {
-                doIndex = true;
-            } else if (args[i].equals("-Td")) {
-                Td = Double.parseDouble(args[i + 1]);
-            } else if (args[i].equals("-Tf")) {
-                Tf = Integer.parseInt(args[i + 1]);
-            } else if (args[i].equals("-co")) {
-                collocation = args[i + 1];
-            } else if (args[i].equals("-h") || args[i].equals("-help") || args[i].equals("--help")) {
-                showHelp = true;
+            switch (args[i]) {
+                case "-source":
+                    sourcefilename = args[i + 1];
+                    break;
+                case "-target":
+                    targetfilename = args[i + 1];
+                    break;
+                case "-index":
+                    doIndex = true;
+                    break;
+                case "-Td":
+                    Td = Double.parseDouble(args[i + 1]);
+                    break;
+                case "-Tf":
+                    Tf = Integer.parseInt(args[i + 1]);
+                    break;
+                case "-co":
+                    collocation = args[i + 1];
+                    break;
+                case "-h":
+                case "-help":
+                case "--help":
+                    showHelp = true;
+                    break;
             }
         }
 
