@@ -31,7 +31,6 @@ public class Corpus {
     /**
      * Constructor for the Corpus.
      * Currently only supports a file.
-     * TODO: Support a directory with multiple files
      *
      * @param source The text file that contains the source language corpus.
      * @param target The text file that contains the target language corpus.
