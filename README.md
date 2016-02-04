@@ -76,6 +76,9 @@ The index files for the corpus are rather large, about 50% larger than the
 corpus itself. Ideally the index would be kept in memory, but as the corpus
 size grows, this becomes impractical. So, the index is loaded from disk.
 
+Note: this software was written as a student project over a few days in 2005
+for the Natural Language Processing course EECS 595 at the University of
+Michigan. It might be useful or interesting, but it almost certainly has bugs.
 
 Usage
 -----
