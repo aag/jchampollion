@@ -24,6 +24,6 @@ dependencies {
     compile "lucene:lucene:1.4.3"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.7'
+wrapper {
+    gradleVersion = '4.10'
 }
