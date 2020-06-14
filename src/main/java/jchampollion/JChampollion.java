@@ -1,14 +1,15 @@
-/**
- * JChampollion is an implementation of the Champollion algorithm,
- * as detailed in the 1996 paper by Smadja, McKeown, and Hatzivassiloglou
- * entitled "Translating Collocations for Bilingual Lexicons: A
- * Statistical Approach"
- */
 package jchampollion;
 
 import java.io.IOException;
 
 /**
+ * JChampollion is an implementation of the Champollion algorithm,
+ * as detailed in the 1996 paper by Smadja, McKeown, and Hatzivassiloglou
+ * entitled "Translating Collocations for Bilingual Lexicons: A
+ * Statistical Approach"
+ *
+ * The JChampollion class is the main application class.
+ *
  * @author Adam Goforth
  *
  */

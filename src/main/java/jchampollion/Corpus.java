@@ -1,6 +1,6 @@
-/**
+/*
  * Corpus.java
- * <p/>
+ *
  * Written by: Adam Goforth
  * Started on: Dec 4, 2005
  */
@@ -19,7 +19,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * This class represents one or more text files that make up a corpus.
+ * The Corpus class represents one or more text files that make up a corpus.
  *
  * @author Adam Goforth
  *
