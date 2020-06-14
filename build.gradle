@@ -7,21 +7,18 @@ sourceCompatibility = 1.7
 version = '1.0'
 
 jar {
-    baseName = 'jchampollion'
-
     manifest {
         attributes 'Implementation-Title': 'JChampollion',
-                   'Implementation-Version': version
+                   'Implementation-Version': archiveVersion
     }
 }
-
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile "lucene:lucene:1.4.3"
+    implementation "lucene:lucene:1.4.3"
 }
 
 wrapper {
